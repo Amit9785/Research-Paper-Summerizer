@@ -15,6 +15,9 @@ class Config:
     SUMMARIZATION_TEMPERATURE = float(os.getenv("SUMMARIZATION_TEMPERATURE", "0.1"))  # Lowest for summaries
     CREATIVE_TEMPERATURE = float(os.getenv("CREATIVE_TEMPERATURE", "0.5"))  # Higher for creative tasks
     
+    # Backward compatibility: TEMPERATURE defaults to QA_TEMPERATURE
+    TEMPERATURE = QA_TEMPERATURE
+    
     # Embedding Configuration
     EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     

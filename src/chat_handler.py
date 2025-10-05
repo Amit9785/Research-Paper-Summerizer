@@ -1,5 +1,5 @@
 import os
-from langchain.chains.question_answering import load_qa_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from typing import List, Dict
@@ -17,7 +17,7 @@ class ChatHandler:
         llm = ChatGroq(
             groq_api_key=self.config.GROQ_API_KEY,
             model_name=self.config.GROQ_MODEL_NAME,
-            temperature=self.config.TEMPERATURE,
+            temperature=self.config.QA_TEMPERATURE,
         )
         
         prompt = PromptTemplate(
@@ -25,14 +25,14 @@ class ChatHandler:
             input_variables=["context", "question", "chat_history"]
         )
         
-        return load_qa_chain(llm=llm, chain_type="stuff", prompt=prompt)
+        return create_stuff_documents_chain(llm=llm, prompt=prompt)
     
     def _create_summarization_chain(self):
         """Build summarization chain with Groq LLM"""
         llm = ChatGroq(
             groq_api_key=self.config.GROQ_API_KEY,
             model_name=self.config.GROQ_MODEL_NAME,
-            temperature=0.1,  # Lower temperature for more consistent summaries
+            temperature=self.config.SUMMARIZATION_TEMPERATURE,
         )
         
         prompt = PromptTemplate(
@@ -40,7 +40,7 @@ class ChatHandler:
             input_variables=["context"]
         )
         
-        return load_qa_chain(llm=llm, chain_type="stuff", prompt=prompt)
+        return create_stuff_documents_chain(llm=llm, prompt=prompt)
     
     def _format_chat_history(self, chat_history: List[Dict[str, str]]) -> str:
         """Format chat history as a string"""
@@ -59,16 +59,15 @@ class ChatHandler:
             chat_history_str = self._format_chat_history(chat_history)
             
             # Get response from chain
-            response = self.chain(
+            response = self.chain.invoke(
                 {
-                    "input_documents": docs,
+                    "context": docs,
                     "question": user_question,
                     "chat_history": chat_history_str
-                },
-                return_only_outputs=True
+                }
             )
             
-            return response["output_text"]
+            return response
         
         except Exception as e:
             return f"Error processing query: {str(e)}"
@@ -83,15 +82,13 @@ class ChatHandler:
                 return "No research papers found in the processed documents. Please process some PDFs first."
             
             # Get response from summarization chain
-            response = self.summarization_chain(
+            response = self.summarization_chain.invoke(
                 {
-                    "input_documents": docs,
-                    "question": "summarize"  # Dummy question for the chain
-                },
-                return_only_outputs=True
+                    "context": docs
+                }
             )
             
-            return response["output_text"]
+            return response
         
         except Exception as e:
             return f"Error generating summary: {str(e)}"

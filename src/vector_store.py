@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from typing import List
 from config.settings import Config
