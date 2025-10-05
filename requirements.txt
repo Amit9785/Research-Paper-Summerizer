@@ -1,0 +1,8 @@
+streamlit>=1.50.0
+PyPDF2==2.12.1
+requests>=2.32.0
+langchain>=0.3.27
+langchain-groq>=0.0.12
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2.2
+python-dotenv>=1.0.0
